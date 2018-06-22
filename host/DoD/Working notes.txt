@@ -1,0 +1,32 @@
+Step 1: make loop to print multiple documents after each other with a spacing
+ask for spacing in terminal
+Step 2: Create interface with tkinter and stuff
+Step 3: Use ESC_slash() to let the printer think i moved the page //WRONG// look at main_gui_interx to use it. Wrong because you cant move y in the meanwhile. 
+
+run from terminal with python3
+-install serial done: sudo apt-get install python3-serial
+If run from terminal edits show up
+write down linux printer name in gui: Epson_Stylus_SX235
+but why does it take so long?
+
+sudo apt-get install python3-pil.imagetk
+
+Use python for Arduino coding with AccelStepper and CNC shield
+
+Printer aansturen met meerdere pages. Want alleen tussen de pages (misschien tijdens y-beweging printer?) door kan je de arduino bewegen.
+Doel: Schuine lijn trekken met behulp van drop on demand software
+
+- Make line function in main_gui to repeatedly automatedly fill a non horizontal line. Like in picture
+of drawing on 24/11/17
+- Abel test create array with x,y values (eventually use this in main_gui as line function (?))
+- spiegel afbeeldingen die je importeert, want microscoop spiegelt alles.
+- Stepper laten werken
+- Testen verticale lijnen
+- Maken scheve lijnen (inclusief d-overlap x oid)
+- Plan paper
+
+06-12-17
+- Add boxes to define line_diag variable in tkinter
+- drop-on-demand after calculate move arduino it moves ten circles or sth
+- clean code again
+- Krijg het werkend op de laptop
