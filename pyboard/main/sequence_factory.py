@@ -79,11 +79,163 @@ class SequenceFactory():
         signal_len = len(lists[0])
         signal = [0x0]*signal_len
         for i in range(signal_len):
-            signal[i] |= (lists[0][i] << config.GPIO_CK)
-            signal[i] |= (lists[1][i] << config.GPIO_SIBL)
-            signal[i] |= (lists[2][i] << config.GPIO_SICL)
+            signal[i] |= (lists[0][i] << config.GPIO_NCHG)
+            signal[i] |= (lists[1][i] << config.GPIO_CH)
+            signal[i] |= (lists[2][i] << config.GPIO_LAT)
+            signal[i] |= (lists[3][i] << config.GPIO_CK)
+            signal[i] |= (lists[4][i] << config.GPIO_SIBL)
+            signal[i] |= (lists[5][i] << config.GPIO_SICL)
         return signal
 
+
+    def get_sequence2(self, nozzles_black=[], nozzles_yellow=[], nozzles_cyan=[], nozzles_magenta=[], size='medium', quality='VSD2'):
+        data_NCHG = [1]
+        data_CH = [0]
+        data_LAT = [0]
+        data_CK = [0]
+        data_SIBL = [0]
+        data_SICL = [0]
+
+        # First pulse
+        data_NCHG.extend([0]*48)
+        data_CH.extend([0]*24 + [1]*12 + [0]*12)
+        data_LAT.extend([1]*12 + [0]*36)
+        data_CK.extend([0]*48)
+        data_SIBL.extend([0]*48)
+        data_SICL.extend([0]*48)
+
+        # Idle
+        data_NCHG.extend([1]*440)
+        data_CH.extend([0]*440)
+        data_LAT.extend([0]*440)
+        data_CK.extend([0]*440)
+        data_SIBL.extend([0]*440)
+        data_SICL.extend([0]*440)
+
+        #Second pulse
+        data_NCHG.extend([0]*48)
+        data_CH.extend([0]*24 + [1]*12 + [0]*12)
+        data_LAT.extend([0]*48)
+        data_CK.extend([0]*48)
+        data_SIBL.extend([0]*48)
+        data_SICL.extend([0]*48)
+
+        # Idle
+        data_NCHG.extend([1]*56)
+        data_CH.extend([0]*56)
+        data_LAT.extend([0]*56)
+        data_CK.extend([0]*56)
+        data_SIBL.extend([0]*56)
+        data_SICL.extend([0]*56)
+
+        # Data block 1
+        for i in range(32):
+            data_NCHG.extend([1]*4)
+            data_CH.extend([0]*4)
+            data_LAT.extend([0]*4)
+            data_CK.extend([1]*2)
+            if (2*i) in nozzles_black:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([1,1,0])
+            else:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([0,0,0])
+            data_CK.extend([0]*2)
+            if (2*i)+1 in nozzles_black:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([1,1,0])
+            else:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([0,0,0])
+            data_SICL.extend([0]*4)
+
+        # Idle
+        data_NCHG.extend([1]*151)
+        data_CH.extend([0]*151)
+        data_LAT.extend([0]*151)
+        data_CK.extend([0]*151)
+        data_SIBL.extend([0]*151)
+        data_SICL.extend([0]*151)
+
+        #Third pulse
+        data_NCHG.extend([0]*48)
+        data_CH.extend([0]*24 + [1]*12 + [0]*12)
+        data_LAT.extend([0]*48)
+        data_CK.extend([0]*48)
+        data_SIBL.extend([0]*48)
+        data_SICL.extend([0]*48)
+
+        # Idle
+        data_NCHG.extend([1]*56)
+        data_CH.extend([0]*56)
+        data_LAT.extend([0]*56)
+        data_CK.extend([0]*56)
+        data_SIBL.extend([0]*56)
+        data_SICL.extend([0]*56)
+
+        # Data block 2
+        for i in range(32):
+            data_NCHG.extend([1]*4)
+            data_CH.extend([0]*4)
+            data_LAT.extend([0]*4)
+            data_CK.extend([1]*2)
+            if (2*i) in nozzles_black:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([1,1,0])
+            else:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([0,0,0])
+            data_CK.extend([0]*2)
+            if (2*i)+1 in nozzles_black:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([1,1,0])
+            else:
+                data_SIBL = data_SIBL[0:-1]
+                data_SIBL.extend([0,0,0])
+            data_SICL.extend([0]*4)
+
+        # Idle
+        data_NCHG.extend([1]*151)
+        data_CH.extend([0]*151)
+        data_LAT.extend([0]*151)
+        data_CK.extend([0]*151)
+        data_SIBL.extend([0]*151)
+        data_SICL.extend([0]*151)
+
+        #Fourth pulse
+        data_NCHG.extend([0]*48)
+        data_CH.extend([0]*24 + [1]*12 + [0]*12)
+        data_LAT.extend([0]*48)
+        data_CK.extend([0]*48)
+        data_SIBL.extend([0]*48)
+        data_SICL.extend([0]*48)
+
+        # Idle
+        data_NCHG.extend([1]*27)
+        data_CH.extend([0]*27)
+        data_LAT.extend([0]*27)
+        data_CK.extend([0]*27)
+        data_SIBL.extend([0]*27)
+        data_SICL.extend([0]*27)
+
+        # Quality block
+        for j in range(16):
+            data_NCHG.extend([1]*4)
+            data_CH.extend([0]*4)
+            data_LAT.extend([0]*4)
+            data_CK.extend([1, 1, 0, 0])
+            data_SIBL.extend([1]*4)
+            data_SICL.extend([1]*4)
+
+        data_NCHG.extend([1]*1)
+        data_CH.extend([0]*1)
+        data_LAT.extend([0]*1)
+        data_CK.extend([0]*1)
+        data_SIBL.extend([0]*1)
+        data_SICL.extend([0]*1)
+
+
+        return self._tuple_to_word_list((data_NCHG, data_CH, data_LAT, data_CK, data_SIBL, data_SICL))
 
 
     def get_sequence(self,
@@ -98,6 +250,7 @@ class SequenceFactory():
         data_clock = [0,0]
         data_black = [0]
         data_color = [0]
+        data_ch = [0]
 
         # PHASE 1: first selection of nozzles
         # Init clock and empty data lines
@@ -149,6 +302,10 @@ class SequenceFactory():
         data_color.append(0)
         data_color.append(0)
 
+        data_nchg = [0]*len(data_clock)
+        data_ch = [0]*len(data_clock)
+        data_lat = [0]*len(data_clock)
+
 
         if plot == True:
             self.fig, axarr = plt.subplots(3, 1, sharex=True)
@@ -157,4 +314,4 @@ class SequenceFactory():
             axarr[2].plot(range(len(data_color)), data_color, drawstyle='steps-pre')
             plt.show()
 
-        return self._tuple_to_word_list((data_clock, data_black, data_color))
+        return self._tuple_to_word_list((data_nchg, data_ch, data_lat, data_clock, data_black, data_color))

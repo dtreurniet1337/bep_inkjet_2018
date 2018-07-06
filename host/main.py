@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from tkinter import *
 import tkinter
 
@@ -6,7 +7,6 @@ import subprocess
 from connect_module import ConnectModule
 from gcode_module import GcodeModule, GcodeProcessorDialog
 from mode_module import ModeModule
-from microscope_module import MicroscopeModule
 from status_module import StatusModule
 
 #import DoD.main_gui
@@ -55,9 +55,6 @@ class MainUI():
 
         self.status_module = StatusModule(self.frame_bottom, self)
         self.status_module.frame.grid(row=1, column=1, sticky='W')
-
-        #self.microscope_module = MicroscopeModule(self.frame_bottom, self)
-        #self.microscope_module.pack()
 
         self.status_module.set_status('MicroPrinter Host initialized')
 

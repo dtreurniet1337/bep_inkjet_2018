@@ -1,2 +1,0 @@
-MicroPrinter Host initialized
-Connected to /dev/ttyACM0

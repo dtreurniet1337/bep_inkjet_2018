@@ -1,4 +1,6 @@
 from pyb import USB_VCP
+import sys
+import machine
 
 class serialListener(USB_VCP):
     """
@@ -15,6 +17,9 @@ class serialListener(USB_VCP):
         try:
             data = self.readline()
             if data != None:
+                if data == b'\x04':
+                    print('Catched reset command...')
+                    machine.reset()
                 return str(data.decode('ascii'))
         except Exception as e: return 'get_message() failed: '+str(e)
         return False

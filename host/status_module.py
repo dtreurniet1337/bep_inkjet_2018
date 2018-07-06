@@ -33,6 +33,13 @@ class StatusModule():
     def set_status(self, txt):
         self.status_bar['text'] = txt
         self.status_bar.grid(row=1, column=2)
-        self.log = open(self.log_file, 'a')
-        self.log.write(txt+'\n')
-        self.log.close()
+
+    def log_file(self, txt):
+        self.set_status(txt)
+        self.master.root.update_idletasks()
+        try:
+            self.log = open(self.log_file, 'a')
+            self.log.write(txt+'\n')
+            self.log.close()
+        except Exception:
+            pass

@@ -30,50 +30,90 @@ class printheadController():
         self.waveform = array('i', waveform)
 
     def _latch(self):
+        self.p_NCHG.value(1)
         self.p_LAT.value(1)
         self.p_LAT.value(0)
+        self.p_NCHG.value(1)
+
 
     def _fire_nozzles(self):
         self.p_NCHG.value(1)
         run_dac(len(self.waveform), addressof(self.waveform))
-        self.p_NCHG.value(0)
 
-
-    def fire_n_nozzles(self, n):
-        signal = SequenceFactory().get_sequence(nozzles_black=range(1,n),
-                                                size='medium',
-                                                quality='economy')
-        for i in range(1000):
-            self._latch()
-            dma_functions.output_signal(signal)
-            self._latch()
-            self._fire_nozzles()
-
-
-    def fire(self, B=0, C=0, S='M', Q='E', F=4000000):
-        if S=='S': droplet_size = 'small'
-        if S=='M': droplet_size = 'medium'
-        if S=='L': droplet_size = 'large'
-
-        if Q=='E': droplet_quality = 'economy'
-        if Q=='J': droplet_quality = 'jeff'
-        if Q=='1': droplet_quality = 'VSD1'
-        if Q=='2': droplet_quality = 'VSD2'
-        if Q=='3': droplet_quality = 'VSD3'
-        if Q=='A': droplet_quality = 'all'
-
-        signal = SequenceFactory().get_sequence(nozzles_black=range(1,B+1),
-                                                nozzles_cyan=range(1,C+1),
-                                                nozzles_yellow=range(1,C+1),
-                                                nozzles_magenta=range(1,C+1),
+    def fire(self, B='0', C='0', S='M', Q='E'):
+        droplet_size = self._get_size(S)
+        droplet_quality = self._get_quality(Q)
+        signal = SequenceFactory().get_sequence2(nozzles_black=self._bin_to_range(B),
+                                                nozzles_cyan=self._bin_to_range(C),
+                                                nozzles_yellow=self._bin_to_range(C),
+                                                nozzles_magenta=self._bin_to_range(C),
                                                 size=droplet_size,
                                                 quality=droplet_quality)
-        #for i in range(1000):
-        self._latch()
-        dma_functions.output_signal(signal)
-        self._latch()
-        self._fire_nozzles()
-        time.sleep(0.001)
+        self._fire(signal)
+
+    def fire_all(self, S='M', Q='E'):
+        droplet_size = self._get_size(S)
+        droplet_quality = self._get_quality(Q)
+        signal = SequenceFactory().get_sequence2(  nozzles_black=range(1, 91),
+                                                nozzles_cyan=range(1, 31),
+                                                nozzles_yellow=range(1, 31),
+                                                nozzles_magenta=range(1, 31),
+                                                size=droplet_size,
+                                                quality=droplet_quality)
+        self._fire(signal)
+
+    def _get_size(self, S):
+        if S=='S': return 'small'
+        if S=='M': return 'medium'
+        if S=='L': return 'large'
+        return 'medium'
+
+    def _get_quality(self, Q):
+        if Q=='E': return 'economy'
+        if Q=='J': return 'jeff'
+        if Q=='1': return 'VSD1'
+        if Q=='2': return 'VSD2'
+        if Q=='3': return 'VSD3'
+        if Q=='A': return 'all'
+        return 'all'
+
+    def _bin_to_range(self, bin):
+        counter = 1
+        lst = []
+        bin = list(bin)
+
+        for i in bin:
+            if i == '1': lst.append(counter)
+            counter += 1
+        return lst
+
+    def _fire(self, signal):
+        for i in range(100):
+            self._wake_chip()
+            self._latch()
+            dma_functions.output_signal(signal)
+            self._all_signals_low()
+            self._fire_nozzles()
+            time.sleep(0.001)
+
+    def _all_signals_low(self):
+        self.p_SIBL.value(0)
+        self.p_SICL.value(0)
+        self.p_CK.value(0)
+        self.p_CH.value(0)
+
+    def _wake_chip(self):
+        self.p_NCHG.value(1)
+        time.sleep(0.0001)
+        self.p_NCHG.value(0)
+        self.p_LAT.value(1)
+        self.p_LAT.value(0)
+        for i in range(51):
+            self.p_NCHG.value(1)
+            time.sleep_us(105)
+            self.p_NCHG.value(0)
+            time.sleep_us(105)
+        self.p_NCHG.value(1)
 
 
 
@@ -104,7 +144,6 @@ def run_dac(r0, r1):
     add(r7, r7, 4) # increment to select next waveform value
 
     # delay for a bit
-    # used to be 3
     movwt(r2, 3)
     label(delay_on)
     sub(r2, r2, 1)
@@ -122,6 +161,11 @@ def run_dac(r0, r1):
     ble(skip_pulse)
 
     # Pulse CH pin
+    # NCHG Down
+    movwt(r2, stm.GPIOB)
+    movw(r3, 1<<8)
+    strh(r3, [r2, stm.GPIO_BSRRH])
+    # CH Up
     movwt(r2, stm.GPIOB)
     movw(r3, 1<<9)
     strh(r3, [r2, stm.GPIO_BSRRL])
@@ -133,9 +177,14 @@ def run_dac(r0, r1):
     cmp(r7, 0)
     bgt(delay_on2)
 
+    # CH Down
     movw(r3, 1<<9)
     strh(r3, [r2, stm.GPIO_BSRRH])
     label(skip_pulse)
+    # NCHG Up
+    movwt(r2, stm.GPIOB)
+    movw(r3, 1<<8)
+    strh(r3, [r2, stm.GPIO_BSRRL])
 
     mov(r3, r0) # reset counter to waveform length
     mov(r7, r1) # reset waveform address

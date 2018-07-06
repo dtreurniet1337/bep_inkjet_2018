@@ -25,7 +25,7 @@ class commandInterpreter():
 
     def _is_gcode(self, command):
         try:
-            if command.split(' ')[0][0] == 'G':
+            if command.split(' ')[0][0] == 'G' or command.split(' ')[0][0] == 'P':
                 return command.split(' ')[0] in self.valid_gcodes
         except Exception as e:
             return False
@@ -38,8 +38,6 @@ class commandInterpreter():
                 return self.execute_gcode(command)
             elif command in config.VALID_COMMANDS:
                 if command == 'RESET': machine.reset()
-            elif command == 'P1':
-                return self.__P1()
             return 'Invalid command: '+str(command)
         except Exception as e:
             return 'execute_command() failed: '+str(e)
@@ -47,16 +45,18 @@ class commandInterpreter():
 
     def execute_gcode(self, gcode):
 
-        function_dict = {'0':self._G1,
-                         '1':self._G1,
-                         '10': self._G10,
-                         '11': self._G11,
-                         '28': self._G28,
-                         '92': self._G92}
+        function_dict = {'G0':self._G1,
+                         'G1':self._G1,
+                         'G10': self._G10,
+                         'G11': self._G11,
+                         'G28': self._G28,
+                         'G92': self._G92,
+                         'P1': self._P1,
+                         'P2': self._P2}
 
         gcode_dict = self._get_gcode_components(gcode)
 
-        try: return function_dict[gcode_dict['G']](gcode_dict)
+        try: return function_dict[gcode.split(' ')[0]](gcode_dict)
         except Exception as e: return 'execute_gcode() failed: '+str(e)
 
         return 'execute_gcode() failed: something went really wrong'
@@ -86,6 +86,16 @@ class commandInterpreter():
         self.stage_controller.set_position(gcode_dict['X'], gcode_dict['Y'])
         return 'Position set'
 
-    def __P1(self):
-        self.printhead_controller.fire(B=10, C=0, S='M', Q='A')
-        return 'Fired nozzles'
+    def _P1(self, gcode_dict):
+        if 'B' not in gcode_dict: gcode_dict['B'] = '0'
+        if 'C' not in gcode_dict: gcode_dict['C'] = '0'
+        if 'S' not in gcode_dict: gcode_dict['S'] = 'M'
+        if 'Q' not in gcode_dict: gcode_dict['Q'] = 'E'
+        self.printhead_controller.fire(B=str(gcode_dict['B']), C=str(gcode_dict['C']), S=str(gcode_dict['S']), Q=str(gcode_dict['Q']))
+        return 'Fired black: '+str(gcode_dict['B'])+' color: '+str(gcode_dict['C'])+' size: '+str(gcode_dict['S'])+' quality: '+str(gcode_dict['Q'])
+
+    def _P2(self, gcode_dict):
+        if 'S' not in gcode_dict: gcode_dict['S'] = 'M'
+        if 'Q' not in gcode_dict: gcode_dict['Q'] = 'E'
+        self.printhead_controller.fire_all(S=str(gcode_dict['S']), Q=str(gcode_dict['Q']))
+        return 'Fired all nozzles'

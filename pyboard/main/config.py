@@ -35,7 +35,7 @@ GPIO_NCHG =          8
 DAC =           'X5'
 
 ####################### GCODE ##########################
-VALID_GCODES = ['G0', 'G1', 'G10', 'G11', 'G28', 'G92', 'P1']
+VALID_GCODES = ['G0', 'G1', 'G10', 'G11', 'G28', 'G92', 'P1', 'P2']
 VALID_COMMANDS = ['RESET']
 # G0    Positioning move
 # G1    Print move

@@ -76,13 +76,19 @@ class ConnectModule():
                 return None
         return 'Error: not connected'
 
-    def send_command(self, command, response=True):
+    def send_command(self, command, response=True, encode=True):
         if not self.is_connected: return 'Error: not connected'
-        self.ser.write(command.encode('ascii'))
+
+        if encode: self.ser.write(command.encode('ascii'))
+        else: self.ser.write(command)
+
         if response:
             while True:
                 r = self.get_response()
-                if r != None: return r
+                if r != None:
+                    print(r)
+                    return r
+
         return True
 
     def print_file(self, file):
@@ -105,18 +111,11 @@ class ConnectModule():
                 print('Skipping homing')
                 continue
 
-            print('Sending: %s'%(l.strip()))
-            self.ser.write(l.strip().encode('ascii'))
-            while True:
-                r = self.get_response()
-                if r != None:
-                    self.master.status_module.set_status(r.strip())
-                    self.master.root.update_idletasks()
-                    break
+            self.send_command(l.strip().encode('ascii'))
             time.sleep(0.22)
-        self.master.status_module.set_status('Finished printing '+str(file))
+
         self.master.status_module.set_status_light('green')
-        self.master.root.update_idletasks()
+        self.master.status_module.log('Finished printing '+str(file))
 
     def update_ports(self):
         available_ports = self.serial_ports()

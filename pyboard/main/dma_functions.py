@@ -21,14 +21,14 @@ def output_signal(signal):
     B6 = X9
     B7 = X10
 
-    B8  = Y3    * SICL
-    B9  = Y4    * SIBL
+    B8  = Y3    * NCHG
+    B9  = Y4    * CH
     B10 = Y9
     B11 = Y10
-    B12 = Y5    * CK
-    B13 = Y6    * LAT
-    B14 = Y7    * CH
-    B15 = Y8    * NCHG
+    B12 = Y5    * LAT
+    B13 = Y6    * CK
+    B14 = Y7    * SIBL
+    B15 = Y8    * SICL
 
     The pins with stars are connected to the printhead as indicated.
 
